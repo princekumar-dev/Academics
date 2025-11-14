@@ -675,9 +675,9 @@ function Settings({ isOpen, onClose, userEmail, userRole, isMobile = false }) {
         }
         style={{
           WebkitTapHighlightColor: 'transparent',
-          touchAction: 'manipulation',
-          userSelect: 'none',
-          WebkitUserSelect: 'none',
+          touchAction: mobileMode ? 'manipulation' : 'auto',
+          userSelect: mobileMode ? 'none' : 'auto',
+          WebkitUserSelect: mobileMode ? 'none' : 'auto',
           maxWidth: '100vw',
           boxSizing: 'border-box',
           // Add safe-area-aware top padding to avoid notch / status-bar overlap on mobile
@@ -686,7 +686,7 @@ function Settings({ isOpen, onClose, userEmail, userRole, isMobile = false }) {
           ...(isFullWidthMobile ? { ['--header-offset']: `${headerOffset + 64}px`, top: `${headerOffset + 64}px` } : {})
         }}
       >
-        <div className={(isFullWidthMobile ? 'inner-panel' : 'bg-white backdrop-blur-xl no-mobile-backdrop') + ' border border-white/20 rounded-xl shadow-lg overflow-hidden w-full max-w-sm mx-auto max-h-[90vh] flex flex-col'} style={{ boxShadow: '0 8px 28px rgba(2,6,23,0.06)' }}>
+        <div className={(isFullWidthMobile ? 'inner-panel' : 'bg-white backdrop-blur-xl no-mobile-backdrop') + ' border border-white/20 rounded-xl shadow-lg overflow-hidden w-full max-w-sm mx-auto max-h-[90vh] flex flex-col group hover:shadow-xl hover:border-white/30 transition-all duration-300'} style={{ boxShadow: '0 8px 28px rgba(2,6,23,0.06)' }}>
         {/* Close button */}
         <button
           type="button"
@@ -716,16 +716,16 @@ function Settings({ isOpen, onClose, userEmail, userRole, isMobile = false }) {
         </button>
 
       {/* Header */}
-      <div className="px-4 sm:px-4 py-3 sm:py-4 border-b border-[#e7edf4]">
+      <div className="px-4 sm:px-4 py-3 sm:py-4 border-b border-[#e7edf4] hover:bg-gray-50/50 transition-colors duration-200">
         <div className="flex items-center gap-3 pr-6">
-          <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center flex-shrink-0">
-            <span className="text-base font-bold text-yellow-600">
+          <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center flex-shrink-0 group-hover:shadow-md group-hover:scale-105 transition-all duration-200">
+            <span className="text-base font-bold text-yellow-600 group-hover:text-yellow-700 transition-colors duration-200">
               {userEmail?.charAt(0).toUpperCase()}
             </span>
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-[#0b1220] font-semibold text-sm truncate">{userEmail}</h3>
-            <p className="text-[#475569] text-xs capitalize">{userRole} Account</p>
+            <h3 className="text-[#0b1220] font-semibold text-sm truncate group-hover:text-black transition-colors duration-200">{userEmail}</h3>
+            <p className="text-[#475569] text-xs capitalize group-hover:text-[#374151] transition-colors duration-200">{userRole} Account</p>
           </div>
         </div>
       </div>
@@ -736,7 +736,7 @@ function Settings({ isOpen, onClose, userEmail, userRole, isMobile = false }) {
         style={{ 
           WebkitOverflowScrolling: 'touch',
           overscrollBehavior: 'contain',
-          touchAction: 'pan-y',
+          touchAction: mobileMode ? 'pan-y' : 'auto',
           WebkitTapHighlightColor: 'transparent',
           scrollBehavior: 'smooth',
           willChange: 'scroll-position',
@@ -746,8 +746,8 @@ function Settings({ isOpen, onClose, userEmail, userRole, isMobile = false }) {
       >
         {/* Account Section */}
         <div>
-          <h4 className="text-sm font-semibold text-[#111418] mb-2 flex items-center gap-2">
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <h4 className="text-sm font-semibold text-[#111418] group-hover:text-[#0b1220] mb-2 flex items-center gap-2 transition-colors duration-200">
+            <svg className="w-4 h-4 group-hover:text-yellow-600 transition-colors duration-200" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
             </svg>
             Account
@@ -766,17 +766,17 @@ function Settings({ isOpen, onClose, userEmail, userRole, isMobile = false }) {
                 e.preventDefault();
                 setShowSignatureModal(true);
               }}
-              className="w-full flex items-center gap-3 p-3 rounded-lg bg-white/6 hover:bg-white/8 active:bg-white/5 transition-colors text-left min-h-[52px] touch-manipulation cursor-pointer"
+              className="w-full flex items-center gap-3 p-3 rounded-lg bg-white/6 hover:bg-white/12 hover:shadow-sm active:bg-white/5 transition-all duration-200 text-left min-h-[52px] touch-manipulation cursor-pointer group"
               style={{ touchAction: 'manipulation' }}
             >
-              <svg className="w-4 h-4 text-[#60758a] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-[#60758a] group-hover:text-[#4a5568] flex-shrink-0 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
               </svg>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-[#111418]">Add Signature</p>
-                <p className="text-xs text-[#60758a] mt-0.5">Draw your digital signature for PDFs</p>
+                <p className="text-sm font-medium text-[#111418] group-hover:text-[#0b1220] transition-colors duration-200">Add Signature</p>
+                <p className="text-xs text-[#60758a] group-hover:text-[#4a5568] mt-0.5 transition-colors duration-200">Draw your digital signature for PDFs</p>
               </div>
-              <svg className="w-4 h-4 text-[#60758a] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-[#60758a] group-hover:text-[#4a5568] group-hover:translate-x-1 flex-shrink-0 transition-all duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
@@ -796,17 +796,17 @@ function Settings({ isOpen, onClose, userEmail, userRole, isMobile = false }) {
                 setShowPasswordModal(true);
                 setPasswordError('');
               }}
-              className="w-full flex items-center gap-3 p-3 rounded-lg bg-white/6 hover:bg-white/8 active:bg-white/5 transition-colors text-left min-h-[52px] touch-manipulation cursor-pointer"
+              className="w-full flex items-center gap-3 p-3 rounded-lg bg-white/6 hover:bg-white/12 hover:shadow-sm active:bg-white/5 transition-all duration-200 text-left min-h-[52px] touch-manipulation cursor-pointer group"
               style={{ touchAction: 'manipulation' }}
             >
-              <svg className="w-4 h-4 text-[#60758a] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-[#60758a] group-hover:text-[#4a5568] flex-shrink-0 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-[#111418]">Reset Password</p>
-                <p className="text-xs text-[#60758a] mt-0.5">Change your account password</p>
+                <p className="text-sm font-medium text-[#111418] group-hover:text-[#0b1220] transition-colors duration-200">Reset Password</p>
+                <p className="text-xs text-[#60758a] group-hover:text-[#4a5568] mt-0.5 transition-colors duration-200">Change your account password</p>
               </div>
-              <svg className="w-4 h-4 text-[#60758a] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-[#60758a] group-hover:text-[#4a5568] group-hover:translate-x-1 flex-shrink-0 transition-all duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
               </svg>
             </button>
@@ -815,8 +815,8 @@ function Settings({ isOpen, onClose, userEmail, userRole, isMobile = false }) {
 
         {/* Notifications Section */}
         <div className="border-t border-[#e7edf4] pt-3">
-          <h4 className="text-sm font-semibold text-[#111418] mb-2 flex items-center gap-2">
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <h4 className="text-sm font-semibold text-[#111418] group-hover:text-[#0b1220] mb-2 flex items-center gap-2 transition-colors duration-200">
+            <svg className="w-4 h-4 group-hover:text-yellow-600 transition-colors duration-200" fill="currentColor" viewBox="0 0 20 20">
               <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
             </svg>
             Notifications
@@ -878,8 +878,8 @@ function Settings({ isOpen, onClose, userEmail, userRole, isMobile = false }) {
                     }
                   }}
                   disabled={notificationLoading || !notificationSupported || notificationPermission === 'denied'}
-                  className={`relative inline-flex h-6 w-10 items-center rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation cursor-pointer ${
-                    notificationsEnabled ? 'bg-theme-gold' : 'bg-[#e7edf4]'
+                  className={`relative inline-flex h-6 w-10 items-center rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation cursor-pointer hover:shadow-md hover:scale-105 ${
+                    notificationsEnabled ? 'bg-theme-gold hover:bg-yellow-500' : 'bg-[#e7edf4] hover:bg-gray-300'
                   }`}
                   style={{ touchAction: 'manipulation' }}
                 >
@@ -913,10 +913,10 @@ function Settings({ isOpen, onClose, userEmail, userRole, isMobile = false }) {
                   e.preventDefault();
                   handleTestNotification();
                 }}
-                className="w-full flex items-center justify-center gap-1 p-2 rounded-md bg-white/6 hover:bg-white/8 active:bg-white/5 text-theme-gold text-xs font-semibold transition-colors min-h-[36px] touch-manipulation cursor-pointer"
+                className="w-full flex items-center justify-center gap-1 p-2 rounded-md bg-white/6 hover:bg-white/12 hover:shadow-sm active:bg-white/5 text-theme-gold hover:text-yellow-600 text-xs font-semibold transition-all duration-200 min-h-[36px] touch-manipulation cursor-pointer group"
                 style={{ touchAction: 'manipulation' }}
               >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-4 h-4 group-hover:scale-110 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                 </svg>
                 Send Test Notification
@@ -941,8 +941,8 @@ function Settings({ isOpen, onClose, userEmail, userRole, isMobile = false }) {
                     e.preventDefault();
                     handleEmailNotificationToggle();
                   }}
-                  className={`relative inline-flex h-6 w-10 items-center rounded-full transition-colors touch-manipulation cursor-pointer ${
-                    emailNotifications ? 'bg-theme-gold text-white' : 'bg-[#e7edf4]'
+                  className={`relative inline-flex h-6 w-10 items-center rounded-full transition-all duration-200 touch-manipulation cursor-pointer hover:shadow-md hover:scale-105 ${
+                    emailNotifications ? 'bg-theme-gold hover:bg-yellow-500 text-white' : 'bg-[#e7edf4] hover:bg-gray-300'
                   }`}
                   style={{ touchAction: 'manipulation' }}
                 >
@@ -959,8 +959,8 @@ function Settings({ isOpen, onClose, userEmail, userRole, isMobile = false }) {
 
         {/* Help Section */}
         <div className="border-t border-[#e7edf4] pt-3">
-          <h4 className="text-sm font-semibold text-[#111418] mb-2 flex items-center gap-2">
-            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+          <h4 className="text-sm font-semibold text-[#111418] group-hover:text-[#0b1220] mb-2 flex items-center gap-2 transition-colors duration-200">
+            <svg className="w-4 h-4 group-hover:text-yellow-600 transition-colors duration-200" fill="currentColor" viewBox="0 0 20 20">
               <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
             </svg>
             Help & Support
@@ -970,14 +970,14 @@ function Settings({ isOpen, onClose, userEmail, userRole, isMobile = false }) {
               type="button"
               onClick={handleEmailSupport}
               onTouchEnd={handleEmailSupport}
-              className="w-full flex items-center gap-3 p-3 rounded-lg bg-white/6 hover:bg-white/8 active:bg-white/5 transition-colors text-left min-h-[52px] touch-manipulation cursor-pointer"
+              className="w-full flex items-center gap-3 p-3 rounded-lg bg-white/6 hover:bg-white/12 hover:shadow-sm active:bg-white/5 transition-all duration-200 text-left min-h-[52px] touch-manipulation cursor-pointer group"
               style={{ touchAction: 'manipulation' }}
             >
-              <svg className="w-4 h-4 text-[#60758a] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg className="w-4 h-4 text-[#60758a] group-hover:text-[#4a5568] flex-shrink-0 transition-colors duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
               </svg>
-              <span className="text-sm font-medium text-[#111418] flex-1">Email Support</span>
-              <svg className="w-4 h-4 text-[#60758a] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <span className="text-sm font-medium text-[#111418] group-hover:text-[#0b1220] flex-1 transition-colors duration-200">Email Support</span>
+              <svg className="w-4 h-4 text-[#60758a] group-hover:text-[#4a5568] group-hover:translate-x-1 group-hover:-translate-y-1 flex-shrink-0 transition-all duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
               </svg>
             </button>
