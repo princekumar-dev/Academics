@@ -253,7 +253,21 @@ function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-50 glass-card flex items-center justify-between whitespace-nowrap px-3 sm:px-4 md:px-6 lg:px-8 xl:px-10 py-3 sm:py-4 mx-2 sm:mx-3 md:mx-4 mt-2 sm:mt-3 md:mt-4">
+    <header 
+      className="sticky top-0 z-50 glass-card flex items-center justify-between whitespace-nowrap px-3 sm:px-4 md:px-6 lg:px-8 xl:px-10 py-3 sm:py-4 mx-2 sm:mx-3 md:mx-4 mt-2 sm:mt-3 md:mt-4"
+      onMouseEnter={() => {
+        // Add class to body for bidirectional hover effect
+        if (typeof document !== 'undefined') {
+          document.body.classList.add('header-hover-active');
+        }
+      }}
+      onMouseLeave={() => {
+        // Remove class from body
+        if (typeof document !== 'undefined') {
+          document.body.classList.remove('header-hover-active');
+        }
+      }}
+    >
       {/* Left Section: Logo, Brand, and Navigation */}
       <div className="flex items-center gap-3 sm:gap-4 md:gap-6 lg:gap-8 flex-1 min-w-0">
         {/* Logo and Brand */}

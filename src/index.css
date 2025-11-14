@@ -853,11 +853,7 @@ body {
     will-change: auto !important;
   }
 
-  /* Optimize animations site-wide for mobile */
-  * {
-    animation-duration: 0.2s !important;
-    transition-duration: 0.15s !important;
-  }
+  /* Optimize animations site-wide for mobile - but allow desktop to be normal */
 
   /* Restore wave-text animation timing specifically so header/company wordmark animates at intended speed on mobile */
   .wave-text {
@@ -1044,15 +1040,7 @@ body {
   }
 }
 
-/* Reduced motion preferences */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
+/* Reduced motion preferences - handled in performance.css with more selective rules */
 
 /* Performance optimizations for mobile devices */
 @media (max-width: 640px) {
@@ -1061,8 +1049,10 @@ body {
     animation-duration: 1s !important;
   }
   
-  /* Simplify all transitions for mobile */
-  * {
+  /* Optimize specific transitions for mobile */
+  .glass-card,
+  .responsive-button,
+  button:not(.wave-login-btn) {
     transition-duration: 0.15s !important;
   }
   
@@ -2006,15 +1996,59 @@ a[class*="bg-"]:not([class*="hover"]) {
   }
 }
 
-/* GlassAlert animations */
+/* Enhanced Notification Animations */
 @keyframes slideIn {
   from {
     opacity: 0;
-    transform: translateY(-20px);
+    transform: translateY(-20px) scale(0.95);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(100%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-100%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes slideInFromTop {
+  from {
+    opacity: 0;
+    transform: translateY(-100%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(100%) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -2024,5 +2058,331 @@ a[class*="bg-"]:not([class*="hover"]) {
   }
   to {
     width: 0%;
+  }
+}
+
+@keyframes pulse-notification {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
+}
+
+/* Notification positioning and responsive styles */
+.notification-container {
+  position: fixed;
+  z-index: 9999;
+  pointer-events: none;
+}
+
+.notification-container > * {
+  pointer-events: auto;
+}
+
+/* Desktop notification styles */
+@media (min-width: 640px) {
+  .notification-top-right {
+    top: 1rem;
+    right: 1rem;
+    animation: slideInFromRight 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  .notification-top-left {
+    top: 1rem;
+    left: 1rem;
+    animation: slideInFromLeft 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  .notification-top-center {
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: slideInFromTop 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  .notification-bottom-right {
+    bottom: 1rem;
+    right: 1rem;
+    animation: slideInFromRight 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  .notification-bottom-left {
+    bottom: 1rem;
+    left: 1rem;
+    animation: slideInFromLeft 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  .notification-bottom-center {
+    bottom: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    animation: slideInFromBottom 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+/* Mobile notification styles */
+@media (max-width: 639px) {
+  .notification-container {
+    left: 0.75rem;
+    right: 0.75rem;
+  }
+  
+  .notification-top-right,
+  .notification-top-left,
+  .notification-top-center {
+    top: 1rem;
+    animation: slideInFromTop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  .notification-bottom-right,
+  .notification-bottom-left,
+  .notification-bottom-center {
+    bottom: 1rem;
+    animation: slideInFromBottom 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  
+  .notification-center {
+    top: 50%;
+    transform: translateY(-50%);
+    animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+}
+
+/* Enhanced glassmorphism for notifications */
+.glass-notification {
+  backdrop-filter: blur(20px) saturate(180%);
+  background: linear-gradient(135deg, 
+    rgba(255, 255, 255, 0.95), 
+    rgba(255, 255, 255, 0.85)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.1),
+    0 4px 16px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+/* Dark mode support for notifications */
+@media (prefers-color-scheme: dark) {
+  .glass-notification {
+    background: linear-gradient(135deg, 
+      rgba(30, 30, 30, 0.95), 
+      rgba(20, 20, 20, 0.85)
+    );
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+  }
+}
+
+/* Notification interaction states */
+.notification-interactive {
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.notification-interactive:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 
+    0 12px 40px rgba(0, 0, 0, 0.15),
+    0 6px 20px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+/* Mobile touch optimization */
+@media (max-width: 639px) {
+  .notification-interactive:active {
+    transform: scale(0.98);
+  }
+  
+  .notification-interactive:hover {
+    transform: none;
+  }
+}
+
+/* Enhanced Toggle Switch Styles */
+.toggle-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 2.5rem; /* w-10 */
+  height: 1.5rem; /* h-6 */
+  border-radius: 9999px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  outline: none;
+  border: none;
+  padding: 0;
+}
+
+.toggle-switch:focus-visible {
+  outline: 2px solid var(--theme-gold-500);
+  outline-offset: 2px;
+}
+
+.toggle-switch.enabled {
+  background-color: var(--theme-gold-600);
+  box-shadow: 0 0 0 1px rgba(233, 178, 71, 0.3);
+}
+
+.toggle-switch.enabled:hover {
+  background-color: var(--theme-gold-500);
+  box-shadow: 0 0 0 2px rgba(233, 178, 71, 0.4);
+  transform: scale(1.05);
+}
+
+.toggle-switch.disabled {
+  background-color: #e5e7eb; /* gray-200 */
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.05);
+}
+
+.toggle-switch.disabled:hover {
+  background-color: #d1d5db; /* gray-300 */
+  transform: scale(1.05);
+}
+
+.toggle-switch:active {
+  transform: scale(0.95);
+}
+
+.toggle-knob {
+  position: absolute;
+  top: 0.125rem; /* 2px */
+  width: 1rem; /* 16px */
+  height: 1rem; /* 16px */
+  background-color: white;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: center;
+}
+
+.toggle-knob.enabled {
+  transform: translateX(1.25rem); /* Move right when enabled */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+}
+
+.toggle-knob.disabled {
+  transform: translateX(0.125rem); /* Move left when disabled */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+/* Loading state for toggle */
+.toggle-loading {
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.toggle-loading .toggle-knob {
+  animation: pulse-toggle 1s ease-in-out infinite;
+}
+
+@keyframes pulse-toggle {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.9);
+  }
+}
+
+/* Mobile toggle enhancements */
+@media (max-width: 640px) {
+  .toggle-switch {
+    width: 2.75rem; /* Slightly larger for better touch */
+    height: 1.75rem;
+    min-height: 44px; /* Minimum touch target */
+    min-width: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .toggle-knob {
+    width: 1.125rem;
+    height: 1.125rem;
+  }
+  
+  .toggle-knob.enabled {
+    transform: translateX(1.375rem);
+  }
+  
+  .toggle-knob.disabled {
+    transform: translateX(0.1875rem);
+  }
+}
+
+/* Settings Modal Glass Card - Independent from Header */
+.settings-glass-card {
+  background: rgba(255, 255, 255, 0.75);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  backdrop-filter: saturate(180%) blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: 0 20px 40px rgba(17, 17, 23, 0.1), 0 8px 16px rgba(17, 17, 23, 0.06);
+  border-radius: 20px;
+  transition: all 0.3s ease;
+}
+
+.settings-glass-card:hover {
+  background: rgba(255, 255, 255, 0.85);
+  box-shadow: 0 25px 50px rgba(17, 17, 23, 0.15), 0 12px 24px rgba(17, 17, 23, 0.1);
+  transform: translateY(-2px);
+}
+
+/* Settings modal now only uses settings-glass-card class for consistent behavior */
+
+/* Combined Hover Effect - When hovering settings modal, only header hovers (not all glass cards) */
+body:has(.settings-glass-card:hover) header .glass-card {
+  background: rgba(255, 255, 255, 0.85) !important;
+  box-shadow: 0 25px 50px rgba(17, 17, 23, 0.15), 0 12px 24px rgba(17, 17, 23, 0.1) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Fallback for browsers that don't support :has() - only target header */
+.settings-hover-active header .glass-card {
+  background: rgba(255, 255, 255, 0.85) !important;
+  box-shadow: 0 25px 50px rgba(17, 17, 23, 0.15), 0 12px 24px rgba(17, 17, 23, 0.1) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Bidirectional hover - when hovering header, settings modal also hovers */
+body:has(header .glass-card:hover) .settings-glass-card {
+  background: rgba(255, 255, 255, 0.85) !important;
+  box-shadow: 0 25px 50px rgba(17, 17, 23, 0.15), 0 12px 24px rgba(17, 17, 23, 0.1) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Fallback for bidirectional hover */
+.header-hover-active .settings-glass-card {
+  background: rgba(255, 255, 255, 0.85) !important;
+  box-shadow: 0 25px 50px rgba(17, 17, 23, 0.15), 0 12px 24px rgba(17, 17, 23, 0.1) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Disable hover effects on mobile to prevent issues with touch */
+@media (max-width: 768px) {
+  .settings-glass-card:hover {
+    transform: none !important;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.04) !important;
+  }
+  
+  body:has(.settings-glass-card:hover) header .glass-card {
+    transform: none !important;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.04) !important;
+  }
+  
+  .settings-hover-active header .glass-card {
+    transform: none !important;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.04) !important;
+  }
+  
+  body:has(header .glass-card:hover) .settings-glass-card {
+    transform: none !important;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.04) !important;
+  }
+  
+  .header-hover-active .settings-glass-card {
+    transform: none !important;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.04) !important;
   }
 }

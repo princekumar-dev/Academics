@@ -184,11 +184,18 @@ img[loading="lazy"] {
    ======================================== */
 
 @media (max-width: 768px) {
-  /* Reduce animations on mobile for better performance */
+  /* Reduce heavy animations on mobile for better performance */
+  .no-mobile-anim,
   .no-mobile-anim * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    animation-duration: 0.2s !important;
+    transition-duration: 0.15s !important;
+  }
+  
+  /* Disable expensive animations on mobile */
+  .glass-card:hover,
+  .desktop-hover:hover {
+    transform: none !important;
+    animation: none !important;
   }
   
   /* Optimize touch interactions */
@@ -210,6 +217,16 @@ img[loading="lazy"] {
   .shadow-lg,
   .shadow-xl {
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  /* Keep essential animations but make them faster */
+  .animate-spin,
+  .loading-spinner {
+    animation-duration: 0.8s !important;
+  }
+  
+  .animate-pulse {
+    animation-duration: 1.5s !important;
   }
 }
 
@@ -309,13 +326,32 @@ textarea {
    ======================================== */
 
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  /* Only reduce decorative animations, not functional ones */
+  .animate-fadeIn,
+  .animate-slideUp,
+  .animate-slideDown,
+  .animate-pulse,
+  .wave-text,
+  .glass-card:hover,
+  .desktop-hover:hover,
+  [class*="hover:"],
+  .transition-transform {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+  }
+  
+  /* Disable scroll behavior changes */
+  html,
+  body {
     scroll-behavior: auto !important;
+  }
+
+  /* Keep critical loading indicators spinning even when motion is reduced */
+  .animate-spin,
+  .loading-spinner {
+    animation-duration: 1s !important;
+    animation-iteration-count: infinite !important;
   }
 }
 

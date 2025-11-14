@@ -32,83 +32,83 @@ export default function GlassAlert({
   }
 
   const positions = {
-    'top-right': 'top-4 right-4 sm:right-4 left-4 sm:left-auto',
-    'top-left': 'top-4 left-4 right-4 sm:right-auto',
-    'top-center': 'top-4 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2',
-    'bottom-right': 'bottom-4 right-4 sm:right-4 left-4 sm:left-auto',
-    'bottom-left': 'bottom-4 left-4 right-4 sm:right-auto',
-    'bottom-center': 'bottom-4 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2',
-    'center': 'top-1/2 left-4 right-4 sm:left-1/2 sm:right-auto sm:-translate-x-1/2 -translate-y-1/2'
+    'top-right': 'notification-container notification-top-right',
+    'top-left': 'notification-container notification-top-left',
+    'top-center': 'notification-container notification-top-center',
+    'bottom-right': 'notification-container notification-bottom-right',
+    'bottom-left': 'notification-container notification-bottom-left',
+    'bottom-center': 'notification-container notification-bottom-center',
+    'center': 'notification-container notification-center'
   }
 
   return (
-    <div 
-      className={`fixed ${positions[position]} z-50 animate-slide-in px-4 sm:px-0`}
-      style={{
-        animation: 'slideIn 0.3s ease-out'
-      }}
-    >
-      {/* Glassmorphism Alert Box */}
+    <div className={`${positions[position]}`}>
+      {/* Enhanced Glassmorphism Alert Box */}
       <div 
         className={`
-          relative w-full sm:min-w-[320px] sm:max-w-md rounded-2xl
-          backdrop-blur-xl bg-white/90 
-          border ${borderColors[type]}
-          shadow-2xl shadow-black/20
-          p-4
+          glass-notification notification-interactive
+          relative w-full sm:min-w-[320px] sm:max-w-md 
+          rounded-2xl sm:rounded-3xl
+          border-2 ${borderColors[type]}
+          p-4 sm:p-5
           before:absolute before:inset-0 
-          before:rounded-2xl before:bg-gradient-to-br 
-          before:from-white/30 before:to-white/10 
+          before:rounded-2xl sm:before:rounded-3xl 
+          before:bg-gradient-to-br 
+          before:from-white/20 before:to-transparent 
           before:pointer-events-none
-          hover:shadow-3xl hover:shadow-black/30
-          transition-all duration-300
+          transform-gpu
         `}
-        style={{
-          backdropFilter: 'blur(16px) saturate(180%)',
-          background: 'linear-gradient(135deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.85))',
-        }}
       >
-        {/* Close Button */}
+        {/* Enhanced Close Button */}
         {onClose && (
           <button
             onClick={onClose}
-            className="absolute top-3 right-3 p-1 rounded-lg 
-                     bg-gray-200/80 hover:bg-gray-300/90 
-                     transition-colors duration-200
-                     backdrop-blur-sm"
+            className="absolute top-3 sm:top-4 right-3 sm:right-4 
+                     p-1.5 sm:p-2 rounded-lg sm:rounded-xl
+                     bg-white/60 hover:bg-white/80 active:bg-white/90
+                     backdrop-blur-sm border border-white/20
+                     transition-all duration-200 
+                     hover:scale-110 active:scale-95
+                     shadow-sm hover:shadow-md
+                     touch-manipulation"
             aria-label="Close alert"
+            style={{ touchAction: 'manipulation' }}
           >
-            <X className="w-4 h-4 text-gray-700" />
+            <X className="w-3 h-3 sm:w-4 sm:h-4 text-gray-700" />
           </button>
         )}
 
-        {/* Alert Content */}
-        <div className="flex items-start gap-2 sm:gap-3 pr-6 sm:pr-8">
-          {/* Icon */}
-          <div className="flex-shrink-0 mt-0.5">
+        {/* Enhanced Alert Content */}
+        <div className="flex items-start gap-3 sm:gap-4 pr-8 sm:pr-10">
+          {/* Enhanced Icon */}
+          <div className="flex-shrink-0 mt-1 p-2 rounded-xl bg-white/40 backdrop-blur-sm">
             {icons[type]}
           </div>
 
-          {/* Text Content */}
-          <div className="flex-1 min-w-0">
+          {/* Enhanced Text Content */}
+          <div className="flex-1 min-w-0 pt-1">
             {title && (
-              <h3 className="text-gray-900 font-semibold text-sm sm:text-base mb-1 drop-shadow-sm break-words">
+              <h3 className="text-gray-900 font-bold text-sm sm:text-base mb-1.5 
+                           drop-shadow-sm break-words leading-tight">
                 {title}
               </h3>
             )}
             {message && (
-              <p className="text-gray-800 text-xs sm:text-sm leading-relaxed drop-shadow-sm break-words">
+              <p className="text-gray-700 text-xs sm:text-sm leading-relaxed 
+                          drop-shadow-sm break-words opacity-90">
                 {message}
               </p>
             )}
           </div>
         </div>
 
-        {/* Progress Bar (for auto-close) */}
+        {/* Enhanced Progress Bar (for auto-close) */}
         {autoClose && (
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/10 rounded-b-2xl overflow-hidden">
+          <div className="absolute bottom-0 left-0 right-0 h-1.5 sm:h-2 
+                        bg-white/10 rounded-b-2xl sm:rounded-b-3xl overflow-hidden">
             <div 
-              className="h-full bg-gradient-to-r from-white/40 to-white/60"
+              className="h-full bg-gradient-to-r from-theme-gold-400 to-theme-gold-600
+                       shadow-sm"
               style={{
                 animation: `progress ${duration}ms linear forwards`
               }}

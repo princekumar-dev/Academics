@@ -11,7 +11,7 @@ export default defineConfig({
         // For local development: use localhost
         // For testing with deployed backend: use Render URL
         target: process.env.VITE_USE_REMOTE_API === 'true' 
-          ? 'https://academics-su1d.onrender.com'
+          ? 'https://academics-42xr.onrender.com'
           : 'http://localhost:3001',
         changeOrigin: true,
         secure: false

@@ -686,7 +686,22 @@ function Settings({ isOpen, onClose, userEmail, userRole, isMobile = false }) {
           ...(isFullWidthMobile ? { ['--header-offset']: `${headerOffset + 64}px`, top: `${headerOffset + 64}px` } : {})
         }}
       >
-        <div className={(isFullWidthMobile ? 'inner-panel' : 'bg-white backdrop-blur-xl no-mobile-backdrop') + ' border border-white/20 rounded-xl shadow-lg overflow-hidden w-full max-w-sm mx-auto max-h-[90vh] flex flex-col group hover:shadow-xl hover:border-white/30 transition-all duration-300'} style={{ boxShadow: '0 8px 28px rgba(2,6,23,0.06)' }}>
+        <div 
+          className={(isFullWidthMobile ? 'inner-panel' : 'settings-glass-card no-mobile-backdrop') + ' rounded-xl shadow-lg overflow-hidden w-full max-w-sm mx-auto max-h-[90vh] flex flex-col group'} 
+          style={{ boxShadow: '0 8px 28px rgba(2,6,23,0.06)' }}
+          onMouseEnter={() => {
+            // Add class to body for combined hover effect
+            if (!isMobile && typeof document !== 'undefined') {
+              document.body.classList.add('settings-hover-active');
+            }
+          }}
+          onMouseLeave={() => {
+            // Remove class from body
+            if (!isMobile && typeof document !== 'undefined') {
+              document.body.classList.remove('settings-hover-active');
+            }
+          }}
+        >
         {/* Close button */}
         <button
           type="button"
@@ -878,23 +893,21 @@ function Settings({ isOpen, onClose, userEmail, userRole, isMobile = false }) {
                     }
                   }}
                   disabled={notificationLoading || !notificationSupported || notificationPermission === 'denied'}
-                  className={`relative inline-flex h-6 w-10 items-center rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation cursor-pointer hover:shadow-md hover:scale-105 ${
-                    notificationsEnabled ? 'bg-theme-gold hover:bg-yellow-500' : 'bg-[#e7edf4] hover:bg-gray-300'
-                  }`}
+                  className={`toggle-switch ${notificationsEnabled ? 'enabled' : 'disabled'} ${
+                    notificationLoading ? 'toggle-loading' : ''
+                  } disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation`}
                   style={{ touchAction: 'manipulation' }}
+                  aria-label={`${notificationsEnabled ? 'Disable' : 'Enable'} push notifications`}
                 >
                   {notificationLoading ? (
-                    <svg className="animate-spin h
-                    -4 w-4 text-white mx-auto" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
+                    <div className="toggle-knob">
+                      <svg className="animate-spin h-3 w-3 text-theme-gold-600 mx-auto" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    </div>
                   ) : (
-                    <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform ${
-                        notificationsEnabled ? 'translate-x-5' : 'translate-x-1'
-                      }`}
-                    />
+                    <div className={`toggle-knob ${notificationsEnabled ? 'enabled' : 'disabled'}`} />
                   )}
                 </button>
               </div>
@@ -941,16 +954,11 @@ function Settings({ isOpen, onClose, userEmail, userRole, isMobile = false }) {
                     e.preventDefault();
                     handleEmailNotificationToggle();
                   }}
-                  className={`relative inline-flex h-6 w-10 items-center rounded-full transition-all duration-200 touch-manipulation cursor-pointer hover:shadow-md hover:scale-105 ${
-                    emailNotifications ? 'bg-theme-gold hover:bg-yellow-500 text-white' : 'bg-[#e7edf4] hover:bg-gray-300'
-                  }`}
+                  className={`toggle-switch ${emailNotifications ? 'enabled' : 'disabled'} touch-manipulation`}
                   style={{ touchAction: 'manipulation' }}
+                  aria-label={`${emailNotifications ? 'Disable' : 'Enable'} email notifications`}
                 >
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-md transition-transform ${
-                      emailNotifications ? 'translate-x-5' : 'translate-x-1'
-                    }`}
-                  />
+                  <div className={`toggle-knob ${emailNotifications ? 'enabled' : 'disabled'}`} />
                 </button>
               </div>
             </div>

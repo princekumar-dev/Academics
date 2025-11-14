@@ -124,31 +124,48 @@ export function Toast({ isOpen, onClose, message, type = 'success', duration = 3
   const style = typeStyles[type] || typeStyles.success
 
   return (
-    <div className="fixed top-4 right-4 z-50 animate-slideInRight">
-      <div className={`${style.bg} text-white px-6 py-4 rounded-lg shadow-2xl max-w-md flex items-center gap-3 relative overflow-hidden`}>
-        {/* Icon */}
-        <div className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-white bg-opacity-20 rounded-full font-bold">
+    <div className="notification-container notification-top-right">
+      <div className={`${style.bg} text-white px-4 sm:px-6 py-3 sm:py-4 
+                     rounded-xl sm:rounded-2xl shadow-2xl 
+                     max-w-sm sm:max-w-md w-full
+                     flex items-center gap-3 relative overflow-hidden
+                     backdrop-blur-sm border border-white/10
+                     notification-interactive transform-gpu`}>
+        {/* Enhanced Icon */}
+        <div className="flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 
+                      flex items-center justify-center 
+                      bg-white/20 rounded-full font-bold text-sm sm:text-base
+                      backdrop-blur-sm">
           {style.icon}
         </div>
 
-        {/* Message */}
-        <p className="flex-1 font-medium">{message}</p>
+        {/* Enhanced Message */}
+        <p className="flex-1 font-medium text-sm sm:text-base leading-relaxed pr-2">
+          {message}
+        </p>
 
-        {/* Close button */}
+        {/* Enhanced Close button */}
         <button
           onClick={onClose}
-          className="flex-shrink-0 text-white hover:bg-white hover:bg-opacity-20 rounded p-1 transition-colors"
+          className="flex-shrink-0 text-white/80 hover:text-white
+                   hover:bg-white/20 active:bg-white/30 
+                   rounded-lg p-1.5 transition-all duration-200
+                   hover:scale-110 active:scale-95
+                   touch-manipulation"
+          style={{ touchAction: 'manipulation' }}
+          aria-label="Close notification"
         >
-          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
 
-        {/* Progress bar */}
+        {/* Enhanced Progress bar */}
         {duration > 0 && (
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-white bg-opacity-20">
+          <div className="absolute bottom-0 left-0 right-0 h-1 sm:h-1.5 
+                        bg-white/20 rounded-b-xl sm:rounded-b-2xl overflow-hidden">
             <div 
-              className={`h-full ${style.progressBar}`}
+              className={`h-full ${style.progressBar} shadow-sm`}
               style={{
                 animation: `shrink ${duration}ms linear forwards`
               }}
