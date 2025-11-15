@@ -3,6 +3,30 @@
    Smooth animations without lag
    ======================================== */
 
+:root {
+  --perf-target-frame: 16ms;
+  --perf-transition-fast: 140ms;
+  --perf-transition-base: 180ms;
+  --perf-transition-rich: 240ms;
+  --perf-animation-distance: 12px;
+  --perf-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@media (max-width: 768px) {
+  :root {
+    --perf-transition-fast: 120ms;
+    --perf-transition-base: 150ms;
+    --perf-animation-distance: 8px;
+  }
+}
+
+@media (min-width: 769px) {
+  :root {
+    --perf-transition-rich: 260ms;
+    --perf-animation-distance: 16px;
+  }
+}
+
 /* ========================================
    1. GPU ACCELERATION
    ======================================== */
@@ -28,7 +52,7 @@ a:not(.header a):not(.modal a) {
 }
 
 /* ========================================
-   2. SMOOTH SCROLLING
+   2. SMOOTH SCROLLING & FRAME LOCK
    ======================================== */
 
 html {
@@ -40,6 +64,7 @@ html {
 body {
   overflow-x: hidden;
   -webkit-tap-highlight-color: transparent;
+  transition: background-color var(--perf-transition-base) var(--perf-timing-function);
 }
 
 /* Optimize scroll containers */
@@ -48,6 +73,16 @@ body {
 .overflow-x-auto {
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
+}
+
+/* Utility to lock sections to smooth scroll pacing */
+.smooth-scroll-lock {
+  scroll-snap-type: y proximity;
+  scroll-behavior: smooth;
+}
+
+.smooth-scroll-lock > * {
+  scroll-snap-align: start;
 }
 
 /* ========================================
@@ -155,28 +190,33 @@ img[loading="lazy"] {
 
 /* Use cubic-bezier for smooth transitions */
 * {
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-timing-function: var(--perf-timing-function);
 }
 
 /* Optimize common transitions */
 .transition-all {
   transition-property: all;
-  transition-duration: 150ms;
+  transition-duration: var(--perf-transition-base);
 }
 
 .transition-colors {
   transition-property: color, background-color, border-color;
-  transition-duration: 150ms;
+  transition-duration: var(--perf-transition-base);
 }
 
 .transition-transform {
   transition-property: transform;
-  transition-duration: 150ms;
+  transition-duration: var(--perf-transition-base);
 }
 
 .transition-opacity {
   transition-property: opacity;
-  transition-duration: 150ms;
+  transition-duration: var(--perf-transition-fast);
+}
+
+.transition-rich {
+  transition-property: transform, opacity, filter;
+  transition-duration: var(--perf-transition-rich);
 }
 
 /* ========================================
@@ -193,11 +233,13 @@ img[loading="lazy"] {
   
   /* Disable expensive animations on mobile */
   .glass-card:hover,
-  .desktop-hover:hover {
+  .desktop-hover:hover,
+  .motion-rich-only {
     transform: none !important;
     animation: none !important;
+    filter: none !important;
   }
-  
+
   /* Optimize touch interactions */
   button,
   a,
@@ -227,6 +269,53 @@ img[loading="lazy"] {
   
   .animate-pulse {
     animation-duration: 1.5s !important;
+  }
+
+  .mobile-motion-selective .animation-heavy,
+  .mobile-motion-selective [data-anim="rich"] {
+    animation: none !important;
+    transition: opacity var(--perf-transition-fast) var(--perf-timing-function);
+  }
+
+  .mobile-motion-selective .animation-essential,
+  .mobile-motion-selective [data-anim="essential"] {
+    animation-duration: var(--perf-transition-base) !important;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .desktop-motion-rich .glass-card,
+  .desktop-motion-rich .responsive-card,
+  .desktop-motion-rich [data-anim="rich"],
+  .desktop-motion-rich .motion-rich-only {
+    transition-duration: var(--perf-transition-rich);
+    animation-duration: var(--perf-transition-rich);
+    transform: translate3d(0, var(--perf-animation-distance), 0);
+  }
+
+  .desktop-motion-rich .motion-rich-only.animate-fadeIn,
+  .desktop-motion-rich .motion-rich-only.animate-slideUp,
+  .desktop-motion-rich [data-anim="rich"].animate-slideUp {
+    animation-fill-mode: both;
+  }
+}
+
+@media (hover: none) and (pointer: coarse) {
+  .motion-rich-only,
+  .desktop-only-anim,
+  .glass-card.motion-intensive,
+  .settings-modal .motion-intensive {
+    animation: none !important;
+    transition: opacity var(--perf-transition-fast) var(--perf-timing-function) !important;
+  }
+
+  .header,
+  .settings-modal,
+  .settings-panel,
+  .settings-drawer {
+    will-change: auto;
+    contain: none;
   }
 }
 

@@ -88,13 +88,13 @@ export default function GlassAlert({
           {/* Enhanced Text Content */}
           <div className="flex-1 min-w-0 pt-1">
             {title && (
-              <h3 className="text-gray-900 font-bold text-sm sm:text-base mb-1.5 
+              <h3 className="alert-title text-gray-900 font-bold text-sm sm:text-base mb-1.5 
                            drop-shadow-sm break-words leading-tight">
                 {title}
               </h3>
             )}
             {message && (
-              <p className="text-gray-700 text-xs sm:text-sm leading-relaxed 
+              <p className="alert-message text-gray-700 text-xs sm:text-sm leading-relaxed 
                           drop-shadow-sm break-words opacity-90">
                 {message}
               </p>
