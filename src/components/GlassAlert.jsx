@@ -45,8 +45,9 @@ export default function GlassAlert({
     <div className={`${positions[position]}`}>
       {/* Enhanced Glassmorphism Alert Box */}
       <div 
+        role="alert"
         className={`
-          glass-notification notification-interactive
+          notification-card glass-notification notification-interactive
           relative w-full sm:min-w-[320px] sm:max-w-md 
           rounded-2xl sm:rounded-3xl
           border-2 ${borderColors[type]}
@@ -62,6 +63,7 @@ export default function GlassAlert({
         {/* Enhanced Close Button */}
         {onClose && (
           <button
+            type="button"
             onClick={onClose}
             className="absolute top-3 sm:top-4 right-3 sm:right-4 
                      p-1.5 sm:p-2 rounded-lg sm:rounded-xl

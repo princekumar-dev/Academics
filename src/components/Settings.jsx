@@ -875,7 +875,7 @@ function Settings({ isOpen, onClose, userEmail, userRole, isMobile = false }) {
                 <p className="text-sm font-medium text-[#111418]">Push Notifications</p>
                 <p className="text-xs text-[#60758a] mt-0.5">Get academic notifications</p>
               </div>
-              <div className="flex-shrink-0">
+              <div className="flex-shrink-0 toggle-touch-area">
                 <button
                   type="button"
                   onClick={(e) => {
@@ -941,7 +941,7 @@ function Settings({ isOpen, onClose, userEmail, userRole, isMobile = false }) {
                 <p className="text-sm font-medium text-[#111418]">Email Notifications</p>
                 <p className="text-xs text-[#60758a] mt-0.5">Receive academic updates via email</p>
               </div>
-              <div className="flex-shrink-0">
+              <div className="flex-shrink-0 toggle-touch-area">
                 <button
                   type="button"
                   onClick={(e) => {
