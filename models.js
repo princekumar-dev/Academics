@@ -95,6 +95,13 @@ const MarksheetSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now }
 })
 
+// Add indexes for query performance
+MarksheetSchema.index({ staffId: 1, status: 1, createdAt: -1 })
+MarksheetSchema.index({ 'studentDetails.department': 1, status: 1, createdAt: -1 })
+MarksheetSchema.index({ 'studentDetails.year': 1, createdAt: -1 })
+MarksheetSchema.index({ status: 1, createdAt: -1 })
+// Note: marksheetId already has unique: true in schema, no need for separate index
+
 // Excel Import Session Schema - for temporary storage during import
 const ImportSessionSchema = new mongoose.Schema({
   sessionId: { type: String, unique: true },
