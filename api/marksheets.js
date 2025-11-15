@@ -95,6 +95,7 @@ export default async function handler(req, res) {
       }
 
       let filter = {}
+      let hodDept = null
       
       // Filter by staff ID
       if (staffId) {
@@ -105,11 +106,12 @@ export default async function handler(req, res) {
         }
       }
       
-      // Filter by HOD's department
+      // Filter by HOD's department (pre-fetch if needed)
       if (hodId) {
-        const hod = await User.findById(hodId)
+        const hod = await User.findById(hodId).select('department').lean()
         if (hod) {
-          filter['studentDetails.department'] = hod.department
+          hodDept = hod.department
+          filter['studentDetails.department'] = hodDept
         }
       }
       
@@ -134,10 +136,13 @@ export default async function handler(req, res) {
         filter['studentDetails.year'] = yearParam
       }
 
+      // Optimized query with field selection and limit
       const marksheets = await Marksheet.find(filter)
-        .populate('staffId', 'name email department class')
+        .select('-__v') // Exclude version key
+        .populate('staffId', 'name email department')
         .populate('hodId', 'name email')
         .sort({ createdAt: -1 })
+        .limit(500) // Reasonable limit to prevent large payloads
         .lean()
 
       return res.status(200).json({ success: true, marksheets })
@@ -283,10 +288,14 @@ export default async function handler(req, res) {
             status: 'dispatch_requested',
             'dispatchRequest.requestedAt': new Date(),
             'dispatchRequest.requestedBy': staff.name,
+            'dispatchRequest.status': 'pending',
             'dispatchRequest.hodResponse': null,
             'dispatchRequest.hodComments': null,
             'dispatchRequest.scheduledDispatchDate': null,
             'dispatchRequest.respondedAt': null,
+            'dispatchRequest.preDispatchNotificationSent': false,
+            'dispatchRequest.autoDispatched': false,
+            'dispatchRequest.autoDispatchFailed': false,
             updatedAt: new Date()
           },
           { new: true }
@@ -340,9 +349,14 @@ export default async function handler(req, res) {
           hodId,
           hodName: hod.name,
           hodSignature: hod.eSignature,
+          'dispatchRequest.status': normalizedResponse,
           'dispatchRequest.hodResponse': normalizedResponse,
           'dispatchRequest.hodComments': comments,
           'dispatchRequest.respondedAt': new Date(),
+          'dispatchRequest.preDispatchNotificationSent': false,
+          'dispatchRequest.autoDispatched': false,
+          'dispatchRequest.autoDispatchFailed': false,
+          'dispatchRequest.dispatchError': null,
           updatedAt: new Date()
         }
 

@@ -1,5 +1,4 @@
 import { connectToDatabase } from '../lib/mongo.js'
-import { User } from '../models.js'
 
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
@@ -13,30 +12,28 @@ export default async function handler(req, res) {
   try {
     await connectToDatabase()
     
-    const { email } = req.body
+    const { endpoint } = req.body
 
-    if (!email) {
-      return res.status(400).json({ success: false, error: 'Email is required' })
+    if (!endpoint) {
+      return res.status(400).json({ success: false, error: 'Endpoint is required' })
     }
 
-    // Find user by email
-    const user = await User.findOne({ email })
+    const mongoose = await connectToDatabase()
+    const collection = mongoose.connection.db.collection('push_subscriptions')
 
-    if (!user) {
-      return res.status(404).json({ success: false, error: 'User not found' })
+    const subscription = await collection.findOne({
+      'subscription.endpoint': endpoint
+    })
+
+    if (!subscription) {
+      return res.status(200).json({ success: true, found: false })
     }
 
-    // Check if user has any active push subscriptions
-    const hasSubscription = user.pushSubscriptions && 
-                           Array.isArray(user.pushSubscriptions) && 
-                           user.pushSubscriptions.some(sub => 
-                             sub.active === true || sub.status === 'active'
-                           )
-
-    return res.status(200).json({ 
-      success: true, 
-      hasSubscription,
-      subscriptionCount: hasSubscription ? user.pushSubscriptions.filter(s => s.active || s.status === 'active').length : 0
+    return res.status(200).json({
+      success: true,
+      found: true,
+      userEmail: subscription.userEmail,
+      active: subscription.active ?? subscription.status === 'active'
     })
 
   } catch (error) {

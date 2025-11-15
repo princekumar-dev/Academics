@@ -20,13 +20,13 @@ export default async function handler(req, res) {
     switch (format.toLowerCase()) {
       case 'pdf':
         await generatePDF(res, { type, data, metadata, filename, generatedBy, generatedAt })
-        break
+        return
       case 'excel':
         await generateExcel(res, { type, data, metadata, filename, generatedBy, generatedAt })
-        break
+        return
       case 'csv':
         await generateCSV(res, { type, data, metadata, filename, generatedBy, generatedAt })
-        break
+        return
       default:
         return res.status(400).json({ success: false, error: 'Unsupported format' })
     }
@@ -68,55 +68,181 @@ async function generatePDF(res, { type, data, metadata, filename, generatedBy, g
   doc.end()
 }
 
+function normalizeClasswiseData(data) {
+  if (!data) return []
+  if (Array.isArray(data)) return data
+  if (typeof data === 'object') {
+    return Object.entries(data).map(([classKey, value]) => ({
+      classKey,
+      ...value
+    }))
+  }
+  return []
+}
+
+function normalizeSubjectData(data) {
+  if (!data) return []
+  if (Array.isArray(data)) return data
+  if (typeof data === 'object') {
+    return Object.entries(data).map(([subjectKey, value]) => ({
+      subjectName: value?.subjectName || subjectKey,
+      subjectCode: value?.subjectCode || value?.code || 'N/A',
+      ...value
+    }))
+  }
+  return []
+}
+
+function drawCard(doc, { x, y, width, height, title, value, icon, iconColor }) {
+  doc.save()
+  doc.roundedRect(x, y, width, height, 12)
+    .fillOpacity(1)
+    .fill('#ffffff')
+  doc.lineWidth(1).strokeColor('#f4efe5').roundedRect(x, y, width, height, 12).stroke()
+  doc.fillColor('#a1a1aa').fontSize(11).text(title, x + 16, y + 14, { width: width - 32 })
+  if (icon) {
+    doc.circle(x + width - 26, y + 18, 10).fill(iconColor || '#fbbf24')
+    doc.fillColor('#ffffff').fontSize(12).text(icon, x + width - 31, y + 11)
+  }
+  doc.fillColor('#111827').fontSize(22).font('Helvetica-Bold')
+    .text(value, x + 16, y + 34)
+  doc.restore()
+}
+
+function renderListSection(doc, { title, data = [], colors = {} }) {
+  const startY = doc.y
+  doc.save()
+  doc.roundedRect(doc.page.margins.left, startY, doc.page.width - doc.page.margins.left - doc.page.margins.right, 20, 10)
+    .fillOpacity(1).fill('#fff8ee')
+  doc.fillColor('#c084fc').fontSize(13).font('Helvetica-Bold')
+    .text(title, doc.page.margins.left + 16, startY + 4)
+  doc.restore()
+  doc.moveDown(1.4)
+  data.forEach(item => {
+    doc.circle(doc.page.margins.left + 10, doc.y + 8, 3).fill(colors.dot || '#f59e0b')
+    doc.fillColor('#111827').fontSize(12).text(item.label, doc.page.margins.left + 24, doc.y, { continued: true })
+    doc.fillColor('#4338ca').text(item.value, { align: 'right' })
+  })
+  doc.moveDown()
+}
+
 function generateDepartmentSummaryPDF(doc, data) {
-  doc.fontSize(14).text('Department Summary Report', { underline: true })
-  doc.moveDown()
+  doc.font('Helvetica-Bold').fontSize(16).fillColor('#111827').text('Department Summary', { align: 'left' })
+  doc.moveDown(0.3)
+  doc.font('Helvetica').fontSize(11).fillColor('#6b7280').text(`Generated on ${new Date().toLocaleString()}`)
+  doc.moveDown(1)
 
-  doc.fontSize(12)
-  doc.text(`Total Students: ${data.totalStudents}`)
-  doc.text(`Total Marksheets: ${data.totalMarksheets}`)
-  doc.text(`Dispatched: ${data.dispatched}`)
-  doc.text(`Pending: ${data.pending}`)
-  doc.text(`Failed: ${data.failed}`)
-  doc.moveDown()
-
-  if (data.yearWiseBreakdown && data.yearWiseBreakdown.length > 0) {
-    doc.fontSize(14).text('Year-wise Breakdown:', { underline: true })
-    doc.moveDown(0.5)
-    
-    data.yearWiseBreakdown.forEach(year => {
-      doc.fontSize(12).text(`Year ${year._id}:`)
-      doc.text(`  Students: ${year.count}`)
-      doc.text(`  Marksheets: ${year.marksheets}`)
-      doc.moveDown(0.3)
+  const cardWidth = (doc.page.width - doc.page.margins.left - doc.page.margins.right - 30) / 4
+  const cardHeight = 70
+  const statuses = [
+    { title: 'Total', value: data.totalStudents || 0, icon: '●', color: '#f97316' },
+    { title: 'Dispatched', value: data.byStatus?.dispatched || 0, icon: '✓', color: '#10b981' },
+    { title: 'Pending', value: data.byStatus?.pending || 0, icon: '⏱', color: '#fbbf24' },
+    { title: 'Rejected', value: data.byStatus?.rejected || 0, icon: '✕', color: '#ef4444' }
+  ]
+  let currentX = doc.page.margins.left
+  const cardY = doc.y
+  statuses.forEach((card) => {
+    drawCard(doc, {
+      x: currentX,
+      y: cardY,
+      width: cardWidth,
+      height: cardHeight,
+      title: card.title,
+      value: card.value,
+      icon: card.icon,
+      iconColor: card.color
     })
+    currentX += cardWidth + 10
+  })
+  doc.y = cardY + cardHeight + 25
+
+  if (Array.isArray(data.yearWiseBreakdown) && data.yearWiseBreakdown.length > 0) {
+    const yearList = data.yearWiseBreakdown.map(year => ({
+      label: `Year ${year._id}`,
+      value: year.count
+    }))
+    renderListSection(doc, { title: 'Year-wise Distribution', data: yearList, colors: { dot: '#f97316' } })
+  }
+
+  if (data.overallGrades && Object.keys(data.overallGrades).length > 0) {
+    const gradeList = Object.entries(data.overallGrades).map(([grade, count]) => ({
+      label: `Grade ${grade}`,
+      value: count
+    }))
+    renderListSection(doc, { title: 'Grade Distribution', data: gradeList, colors: { dot: '#a855f7' } })
   }
 }
 
-function generateClasswisePerformancePDF(doc, data) {
-  doc.fontSize(14).text('Classwise Performance Report', { underline: true })
-  doc.moveDown()
+function generateClasswisePerformancePDF(doc, rawData) {
+  const data = normalizeClasswiseData(rawData)
+  if (data.length === 0) {
+    doc.text('No classwise performance data available.')
+    return
+  }
+
+  doc.font('Helvetica-Bold').fontSize(16).fillColor('#111827').text('Class-wise Performance', { align: 'left' })
+  doc.moveDown(0.3)
+  doc.font('Helvetica').fontSize(11).fillColor('#6b7280').text(`Generated on ${new Date().toLocaleString()}`)
+  doc.moveDown(1)
 
   data.forEach(classData => {
-    doc.fontSize(12).text(`${classData.branch} - Year ${classData.year}`, { underline: true })
-    doc.text(`Total Students: ${classData.totalStudents}`)
-    doc.text(`Dispatched: ${classData.dispatched}`)
-    doc.text(`Pending: ${classData.pending}`)
-    doc.text(`Dispatch Rate: ${classData.dispatchRate}%`)
-    doc.moveDown()
+    const cardWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right
+    const cardHeight = 110
+    const startY = doc.y
+    doc.save()
+    doc.roundedRect(doc.page.margins.left, startY, cardWidth, cardHeight, 18)
+      .fillOpacity(1).fill('#ffffff')
+    doc.lineWidth(1).strokeColor('#f1f5f9').roundedRect(doc.page.margins.left, startY, cardWidth, cardHeight, 18).stroke()
+
+    const classLabel = classData.classKey || `${classData.branch || 'Class'} ${classData.section || ''}`
+    doc.fillColor('#16a34a').fontSize(11).text('🏫', doc.page.margins.left + 18, startY + 18)
+    doc.fillColor('#111827').fontSize(13).font('Helvetica-Bold')
+      .text(classLabel, doc.page.margins.left + 40, startY + 16, { width: cardWidth / 2 })
+    doc.fillColor('#6b7280').font('Helvetica').fontSize(11)
+      .text(`Year ${classData.year || '-'}` + (classData.section ? ` • Section ${classData.section}` : ''), doc.page.margins.left + 40, startY + 33)
+
+    doc.fillColor('#22c55e').fontSize(10).text(`${classData.totalStudents} Students`, doc.page.margins.left + cardWidth - 140, startY + 18)
+    doc.fillColor('#f59e0b').text(`${classData.dispatchRate}% Dispatched`, doc.page.margins.left + cardWidth - 140, startY + 32)
+
+    const metricsY = startY + 60
+    const metrics = [
+      { label: 'Total', value: classData.totalStudents, color: '#10b981' },
+      { label: 'Dispatched', value: classData.dispatched, color: '#2563eb' },
+      { label: 'Pending', value: classData.pending, color: '#f59e0b' }
+    ]
+    let metricX = doc.page.margins.left + 20
+    metrics.forEach(metric => {
+      doc.fillColor('#6b7280').fontSize(10).text(metric.label, metricX, metricsY)
+      doc.fillColor(metric.color).fontSize(16).font('Helvetica-Bold').text(metric.value, metricX, metricsY + 12)
+      metricX += 110
+    })
+
+    if (classData.gradeDistribution && Object.keys(classData.gradeDistribution).length > 0) {
+      doc.fillColor('#9333ea').font('Helvetica-Bold').fontSize(11)
+        .text('Grade Distribution', doc.page.margins.left + cardWidth - 200, metricsY)
+      doc.font('Helvetica').fontSize(10).fillColor('#4c1d95')
+      Object.entries(classData.gradeDistribution).forEach(([grade, count], idx) => {
+        doc.text(`${grade}: ${count}`, doc.page.margins.left + cardWidth - 200, metricsY + 14 + (idx * 12))
+      })
+    }
+
+    doc.restore()
+    doc.moveDown(4)
   })
 }
 
-function generateFailedDispatchesPDF(doc, data) {
+function generateFailedDispatchesPDF(doc, data = []) {
+  const list = Array.isArray(data) ? data : []
   doc.fontSize(14).text('Failed Dispatches Report', { underline: true })
   doc.moveDown()
 
-  if (data.length === 0) {
+  if (list.length === 0) {
     doc.text('No failed dispatches found.')
     return
   }
 
-  data.forEach((marksheet, index) => {
+  list.forEach((marksheet, index) => {
     doc.fontSize(10)
     doc.text(`${index + 1}. ${marksheet.studentName} (${marksheet.registerNumber})`)
     doc.text(`   Branch: ${marksheet.branch}, Year: ${marksheet.year}`)
@@ -126,16 +252,57 @@ function generateFailedDispatchesPDF(doc, data) {
   })
 }
 
-function generateSubjectAnalysisPDF(doc, data) {
-  doc.fontSize(14).text('Subject Analysis Report', { underline: true })
-  doc.moveDown()
+function generateSubjectAnalysisPDF(doc, data = []) {
+  const list = normalizeSubjectData(data)
+  doc.font('Helvetica-Bold').fontSize(16).fillColor('#111827').text('Subject Analysis', { align: 'left' })
+  doc.moveDown(0.3)
+  doc.font('Helvetica').fontSize(11).fillColor('#6b7280').text(`Generated on ${new Date().toLocaleString()}`)
+  doc.moveDown(1)
 
-  data.forEach(subject => {
-    doc.fontSize(12).text(`${subject.subjectName} (${subject.subjectCode})`, { underline: true })
-    doc.text(`Total Enrollments: ${subject.totalEnrollments}`)
-    doc.text(`Pass Rate: ${subject.passRate}%`)
-    doc.text(`Average Grade: ${subject.averageGrade}`)
-    doc.moveDown()
+  if (list.length === 0) {
+    doc.text('No subject analysis data available.')
+    return
+  }
+
+  list.forEach(subject => {
+    const cardWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right
+    const cardHeight = 100
+    const startY = doc.y
+
+    doc.save()
+    doc.roundedRect(doc.page.margins.left, startY, cardWidth, cardHeight, 16)
+      .fillOpacity(1).fill('#ffffff')
+    doc.lineWidth(1).strokeColor('#ede9fe').roundedRect(doc.page.margins.left, startY, cardWidth, cardHeight, 16).stroke()
+
+    doc.fillColor('#a855f7').fontSize(13).text('📘', doc.page.margins.left + 16, startY + 18)
+    doc.fillColor('#111827').font('Helvetica-Bold').fontSize(13)
+      .text(subject.subjectName, doc.page.margins.left + 40, startY + 16, { width: cardWidth / 2 })
+    doc.font('Helvetica').fontSize(10).fillColor('#6b7280')
+      .text(`Subject Code: ${subject.subjectCode || 'N/A'}`, doc.page.margins.left + 40, startY + 34)
+
+    doc.fillColor('#d946ef').fontSize(10).text(`${subject.totalEnrollments || 0} Students`, doc.page.margins.left + cardWidth - 130, startY + 22)
+
+    const avgValue = typeof subject.average === 'number' ? subject.average.toFixed(1) : (subject.average ?? '0')
+    const passRateRaw = subject.passingRate ?? subject.passRate ?? 0
+    const passRate = typeof passRateRaw === 'number' ? passRateRaw.toFixed(1) : passRateRaw
+
+    const metrics = [
+      { label: 'Average', value: avgValue, color: '#6366f1' },
+      { label: 'Highest', value: subject.highest ?? '-', color: '#16a34a' },
+      { label: 'Lowest', value: subject.lowest ?? '-', color: '#dc2626' },
+      { label: 'Pass Rate', value: `${passRate}%`, color: '#f59e0b' }
+    ]
+
+    let metricX = doc.page.margins.left + 30
+    const metricY = startY + 60
+    metrics.forEach(metric => {
+      doc.fillColor('#6b7280').fontSize(10).text(metric.label, metricX, metricY)
+      doc.fillColor(metric.color).font('Helvetica-Bold').fontSize(14).text(metric.value, metricX, metricY + 12)
+      metricX += 120
+    })
+
+    doc.restore()
+    doc.moveDown(3.5)
   })
 }
 
@@ -209,14 +376,20 @@ function generateDepartmentSummaryExcel(worksheet, data, headerStyle) {
   }
 }
 
-function generateClasswisePerformanceExcel(worksheet, data, headerStyle) {
+function generateClasswisePerformanceExcel(worksheet, rawData, headerStyle) {
+  const data = normalizeClasswiseData(rawData)
   worksheet.addRow(['Branch', 'Year', 'Total Students', 'Dispatched', 'Pending', 'Dispatch Rate (%)'])
   worksheet.getRow(worksheet.rowCount).style = headerStyle
 
+  if (data.length === 0) {
+    worksheet.addRow(['N/A', 'N/A', 0, 0, 0, 0])
+    return
+  }
+
   data.forEach(classData => {
     worksheet.addRow([
-      classData.branch,
-      classData.year,
+      classData.branch || classData.classKey || 'Class',
+      classData.year || '—',
       classData.totalStudents,
       classData.dispatched,
       classData.pending,
@@ -226,7 +399,8 @@ function generateClasswisePerformanceExcel(worksheet, data, headerStyle) {
 }
 
 function generateFailedDispatchesExcel(worksheet, data, headerStyle) {
-  if (data.length === 0) {
+  const list = Array.isArray(data) ? data : []
+  if (list.length === 0) {
     worksheet.addRow(['No failed dispatches found'])
     return
   }
@@ -234,7 +408,7 @@ function generateFailedDispatchesExcel(worksheet, data, headerStyle) {
   worksheet.addRow(['Student Name', 'Register Number', 'Branch', 'Year', 'Attempts', 'Last Attempt'])
   worksheet.getRow(worksheet.rowCount).style = headerStyle
 
-  data.forEach(marksheet => {
+  list.forEach(marksheet => {
     worksheet.addRow([
       marksheet.studentName,
       marksheet.registerNumber,
@@ -247,10 +421,16 @@ function generateFailedDispatchesExcel(worksheet, data, headerStyle) {
 }
 
 function generateSubjectAnalysisExcel(worksheet, data, headerStyle) {
+  const list = normalizeSubjectData(data)
   worksheet.addRow(['Subject Name', 'Subject Code', 'Total Enrollments', 'Pass Rate (%)', 'Average Grade'])
   worksheet.getRow(worksheet.rowCount).style = headerStyle
 
-  data.forEach(subject => {
+  if (list.length === 0) {
+    worksheet.addRow(['No subject data available'])
+    return
+  }
+
+  list.forEach(subject => {
     worksheet.addRow([
       subject.subjectName,
       subject.subjectCode,
@@ -307,11 +487,17 @@ function generateDepartmentSummaryCSV(data) {
   return csv
 }
 
-function generateClasswisePerformanceCSV(data) {
+function generateClasswisePerformanceCSV(rawData) {
+  const data = normalizeClasswiseData(rawData)
   let csv = 'Branch,Year,Total Students,Dispatched,Pending,Dispatch Rate (%)\n'
   
+  if (data.length === 0) {
+    csv += 'N/A,N/A,0,0,0,0\n'
+    return csv
+  }
+
   data.forEach(classData => {
-    csv += `"${classData.branch}",${classData.year},${classData.totalStudents},${classData.dispatched},${classData.pending},${classData.dispatchRate}\n`
+    csv += `"${classData.branch || classData.classKey}",${classData.year || ''},${classData.totalStudents},${classData.dispatched},${classData.pending},${classData.dispatchRate}\n`
   })
 
   return csv
@@ -332,9 +518,15 @@ function generateFailedDispatchesCSV(data) {
 }
 
 function generateSubjectAnalysisCSV(data) {
+  const list = normalizeSubjectData(data)
   let csv = 'Subject Name,Subject Code,Total Enrollments,Pass Rate (%),Average Grade\n'
   
-  data.forEach(subject => {
+  if (list.length === 0) {
+    csv += 'N/A,N/A,0,0,0\n'
+    return csv
+  }
+
+  list.forEach(subject => {
     csv += `"${subject.subjectName}","${subject.subjectCode}",${subject.totalEnrollments},${subject.passRate},"${subject.averageGrade}"\n`
   })
 

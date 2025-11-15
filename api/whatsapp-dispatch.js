@@ -110,7 +110,9 @@ export default async function handler(req, res) {
           return res.status(404).json({ success: false, error: 'Marksheet not found' })
         }
 
-        if (marksheet.status !== 'approved_by_hod') {
+        // Allow dispatch if approved or rescheduled by HOD
+        const allowedStatuses = ['approved_by_hod', 'rescheduled_by_hod']
+        if (!allowedStatuses.includes(marksheet.status)) {
           return res.status(400).json({ 
             success: false, 
             error: 'Marksheet must be approved by HOD before dispatch' 
@@ -263,7 +265,9 @@ export default async function handler(req, res) {
               continue
             }
 
-            if (marksheet.status !== 'approved_by_hod') {
+            // Allow dispatch if approved or rescheduled by HOD
+            const allowedStatuses = ['approved_by_hod', 'rescheduled_by_hod']
+            if (!allowedStatuses.includes(marksheet.status)) {
               results.failed++
               results.errors.push(`Marksheet ${marksheetId} not approved by HOD`)
               continue
