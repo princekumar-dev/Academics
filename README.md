@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # MSEC Academics - Academic Management System
 
 ![MSEC Logo](public/images/mseclogo.png)
